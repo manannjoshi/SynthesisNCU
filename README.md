@@ -1,19 +1,19 @@
 # SynthesisNCU
 
-**Waste to Worth for campus.** Students find a second life for unused or broken hostel items through reuse, donation, exchange and repair.
+**Waste to Worth for campus.** Students find a second life for unused or broken campus items through reuse, donation, exchange and repair. Marketplace exchanges are coordinated at Cafe 10.
 
 Live demo: `https://YOUR-PROJECT.vercel.app` (placeholder, not deployed yet)
 
 ## Problem and users
-Hostel rooms fill up with items that are still useful: a mixer base without its jar, a charger nobody needs, a spare chair. They get binned because nobody knows who needs them. SynthesisNCU is for first-year to final-year students living in campus hostels.
+Campus spaces fill up with items that are still useful: a mixer base without its jar, a charger nobody needs, a spare chair. They get binned because nobody knows who needs them. SynthesisNCU helps students find useful items and meet at Cafe 10.
 
 ## How it supports Waste to Worth
 It connects a spare or broken item with a complementary part or a person who can reuse it, so fewer working items become waste. The "items kept in use" counter is a **demo estimate** based on the sample listings shown, not real impact data.
 
 ## Demo flow (about 30 seconds)
-1. **Browse** sample listings, filter by category and hostel.
+1. **Browse** sample listings in the AI Marketplace and filter by category.
 2. **Check item**: press **Try sample item** (no upload, no key needed) or upload a photo.
-3. **Match**: see a suggested listing, a match percentage with reasons, and press **Request pickup** for an on-screen confirmation (nobody is contacted).
+3. **Combos**: see recommended campus item combinations and build a bundle. Bring accepted items to Cafe 10.
 
 Sample input: the built-in "mixer grinder base, jar missing".
 Sample output: Kitchen, part type base, Prestige Iris (label visible), condition Fair, needs inspection, matched to "Mixer grinder jar, 1.5 L" at 95% (category + complementary part + brand + model, capped at 95%).
@@ -51,7 +51,7 @@ Import the GitHub repo in Vercel (framework preset "Other", no build command), a
 - Uploaded photos are sent to Gemini for analysis and are not stored by this app.
 
 ## Future work
-Add-your-own listings (localStorage first), shared listings with a backend, hostel-level pickup scheduling, repair-café events, and a real impact tracker.
+Add-your-own listings (localStorage first), shared listings with a backend, Cafe 10 item handoff coordination, repair-café events, and a real impact tracker.
 
 ## Images
 Listing photos are local files in `images/` (no emojis, no remote images). Missing files are skipped and a neutral gray box is shown. See `data/listings.js` for the `image` path of each listing; `images/sample-item.jpg` is shown for the sample item.

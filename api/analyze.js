@@ -23,8 +23,8 @@ const SCHEMA = S('OBJECT', { properties: {
   condition: S('STRING', { enum: ['Good', 'Fair', 'Poor', 'Unclear'] }),
   isElectrical: S('BOOLEAN'), needsInspection: S('BOOLEAN'), retakePhoto: S('BOOLEAN'),
   retakeReason: S('STRING'), explanation: S('STRING'), confidence: S('STRING', { enum: ['low', 'medium', 'high'] }),
-  recommendedListingId: S('INTEGER'), bundleTitle: S('STRING'), bundleReason: S('STRING')
-}, required: ['itemName', 'category', 'visibleDamage', 'condition', 'isElectrical', 'needsInspection', 'retakePhoto', 'explanation', 'confidence', 'recommendedListingId', 'bundleTitle', 'bundleReason'] });
+  recommendedListingId: S('INTEGER'), bundleListingIds: S('ARRAY', { items: S('INTEGER') }), bundleTitle: S('STRING'), bundleReason: S('STRING')
+}, required: ['itemName', 'category', 'visibleDamage', 'condition', 'isElectrical', 'needsInspection', 'retakePhoto', 'explanation', 'confidence', 'recommendedListingId', 'bundleListingIds', 'bundleTitle', 'bundleReason'] });
 
 function clean(a) {
   const str = (v, n) => (typeof v === 'string' ? v.slice(0, n) : '');
@@ -36,6 +36,7 @@ function clean(a) {
     retakePhoto: !!a.retakePhoto, retakeReason: str(a.retakeReason, 160), explanation: str(a.explanation, 300),
     confidence: ['low', 'medium', 'high'].includes(a.confidence) ? a.confidence : 'low',
     recommendedListingId: typeof a.recommendedListingId === 'number' ? a.recommendedListingId : (parseInt(a.recommendedListingId, 10) || 0),
+    bundleListingIds: Array.isArray(a.bundleListingIds) ? Array.from(new Set(a.bundleListingIds.map(x => parseInt(x, 10)).filter(x => Number.isInteger(x) && x > 0))).slice(0, 2) : [],
     bundleTitle: str(a.bundleTitle, 120),
     bundleReason: str(a.bundleReason, 350)
   };
@@ -55,10 +56,10 @@ module.exports = async function handler(req, res) {
 
   const listings = Array.isArray(req.body && req.body.listings) && req.body.listings.length ? req.body.listings : [];
   const listingsList = listings.length
-    ? listings.map(l => '#' + l.id + ': ' + l.title + ' (' + (l.category || '') + ')').join('; ')
+    ? listings.map(l => '#' + l.id + ': ' + l.title + ' (' + (l.category || '') + ', available at ' + (l.location || 'Cafe 10') + ', ' + (l.product || '') + ', ' + (l.partType || '') + '; ' + (l.note || '') + ')').join('; ')
     : '#1: Mixer grinder jar 1.5L (Kitchen); #2: Mixer jar set (Kitchen); #3: Laptop charger 65W (Electronics); #4: Desk lamp (Electronics); #5: Study chair (Furniture); #7: Electric kettle base (Kitchen); #9: Extension board (Electronics); #10: Compact study table (Furniture)';
 
-  const userPrompt = 'Analyze this item photo. Also look at these available campus listings:\n[' + listingsList + ']\nRecommend 1 complementary item from this list that pairs with this item to create an Amazon-style bundle combo (e.g. desk lamp + study table/chair, mixer jar + base, charger + extension board). Set recommendedListingId to its ID number (or 0 if none), bundleTitle to a catchy combo name (e.g. "Late-Night Study Nook"), and bundleReason to 1-2 sentences explaining why college students frequently pair them together.';
+  const userPrompt = 'Analyze this item photo. Also reason about the available campus listings:\n[' + listingsList + ']\nCreate the most useful coherent campus combo containing this item and up to TWO items from the list (so the combo has no more than 3 items total). You may use one item, two items, or none if nothing fits. Use your own judgment about practical compatibility and student needs; do not force a match. Return bundleListingIds as the IDs of the chosen listing items (zero to two unique IDs). Set recommendedListingId to the first chosen ID for compatibility, or 0 if none. Give the combo a concise title and explain why the items work together. Never claim electrical items are safe or that a fit is guaranteed.';
 
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
@@ -105,7 +106,11 @@ module.exports = async function handler(req, res) {
     if (text.startsWith('```')) {
       text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
     }
-    return res.status(200).json({ source: 'gemini', model: activeModel, analysis: clean(JSON.parse(text)) });
+    const analysis = clean(JSON.parse(text));
+    const validListingIds = new Set(listings.map(l => Number(l.id)).filter(Number.isFinite));
+    analysis.bundleListingIds = analysis.bundleListingIds.filter(id => validListingIds.has(id)).slice(0, 2);
+    analysis.recommendedListingId = analysis.bundleListingIds[0] || 0;
+    return res.status(200).json({ source: 'gemini', model: activeModel, analysis });
   } catch (e) {
     const timeout = e && e.name === 'AbortError';
     return res.status(timeout ? 504 : 502).json({

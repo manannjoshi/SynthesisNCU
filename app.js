@@ -15,8 +15,9 @@
     retakePhoto: false, retakeReason: '', confidence: 'high',
     explanation: 'A clean desk study lamp with adjustable neck. Ideal for focused room lighting.',
     recommendedListingId: 10,
+    bundleListingIds: [10, 5],
     bundleTitle: 'Late-Night Study Nook Combo',
-    bundleReason: 'Pairing this focused desk lamp with a compact study table creates an ideal, distraction-free study corner in your hostel room.'
+    bundleReason: 'Pairing a focused desk lamp with a compact study table creates a useful study corner.'
   };
 
   function view(id) {
@@ -30,15 +31,30 @@
   function fill(sel, vals) { vals.forEach(v => { const o = document.createElement('option'); o.value = o.textContent = v; sel.appendChild(o); }); }
   function cardHTML(l) {
     const id = String(l.id), added = bundle.has(id);
-    return '<article class="card"><button class="card-open" type="button" data-item="' + esc(id) + '" aria-label="View ' + esc(l.title) + '">' + img(l.image, l.title) + '<span class="cb"><strong>' + esc(l.title) + '</strong><span class="meta">' + esc(l.mode) + ' · ' + esc(l.hostel) + '</span><span class="meta">' + esc(l.condition) + '</span>' +
+    return '<article class="card"><button class="card-open" type="button" data-item="' + esc(id) + '" aria-label="View ' + esc(l.title) + '">' + img(l.image, l.title) + '<span class="cb"><strong>' + esc(l.title) + '</strong><span class="meta">' + esc(l.mode) + ' · ' + esc(l.location || 'Cafe 10') + '</span><span class="meta">' + esc(l.condition) + '</span>' +
       (l.electrical ? '<span class="warn">Inspect before use</span>' : '') + '<span class="card-hint">View item →</span></span></button><button class="add-item' + (added ? ' selected' : '') + '" type="button" data-add="' + esc(id) + '" aria-label="' + (added ? 'Remove ' : 'Add ') + esc(l.title) + (added ? ' from' : ' to') + ' bundle">' + (added ? '✓' : '+') + '</button></article>';
   }
   function renderBrowse() {
-    const c = $('#fCat').value, h = $('#fHostel').value;
-    const shown = LIST.filter(l => (!c || l.category === c) && (!h || l.hostel === h));
+    const c = $('#fCat').value;
+    const shown = LIST.filter(l => !c || l.category === c);
     $('#grid').innerHTML = shown.map(cardHTML).join('');
     $('#empty').hidden = shown.length > 0; $('#kept').textContent = shown.length;
+    renderRecommendedCombos();
     updateBundleBar();
+  }
+  const RECOMMENDED_COMBOS = [
+    { title: 'Campus Tech Setup', ids: [9, 3], reason: 'Pair a laptop charger with an extension board for a useful desk setup. Inspect electrical items before use.' },
+    { title: 'Winter Campus Pair', ids: [11, 8], reason: 'A warm scarf and jacket make a practical pair for chilly campus days.' },
+    { title: 'Drawing Essentials', ids: [6, 12], reason: 'Pair a drawing kit with a bundle of sheets for coursework and studio projects.' }
+  ];
+  function renderRecommendedCombos() {
+    const root = $('#comboGrid');
+    if (!root) return;
+    root.innerHTML = RECOMMENDED_COMBOS.map(combo => {
+      const items = combo.ids.map(id => LIST.find(l => Number(l.id) === id)).filter(Boolean);
+      if (items.length < 2) return '';
+      return '<article class="combo-card"><h3>' + esc(combo.title) + '</h3><div class="combo-items">' + items.map((item, i) => (i ? '<span class="combo-plus">＋</span>' : '') + '<div class="combo-item">' + img(item.image, item.title) + '<span>' + esc(item.title) + '</span></div>').join('') + '</div><p>' + esc(combo.reason) + '</p><button class="pill outline combo-add" type="button" data-combo="' + esc(combo.ids.join(',')) + '">Add combo to bundle</button></article>';
+    }).join('');
   }
   function updateBundleBar() {
     const bar = $('#bundleBar'); if (!bar) return;
@@ -62,7 +78,7 @@
   function bundleGroupsHTML(removable) {
     const selected = Array.from(bundle).map(id => LIST.find(l => String(l.id) === id)).filter(Boolean);
     const categories = Array.from(new Set(selected.map(l => l.category || 'Other'))).sort();
-    return categories.map(category => '<section class="bundle-group"><h3>' + esc(category) + '</h3><ul>' + selected.filter(l => (l.category || 'Other') === category).map(l => '<li><span>' + esc(l.title) + '<small>' + esc(l.mode) + ' · ' + esc(l.hostel) + '</small></span>' + (removable ? '<button class="remove-item" type="button" data-remove="' + esc(l.id) + '" aria-label="Remove ' + esc(l.title) + '">Remove</button>' : '') + '</li>').join('') + '</ul></section>').join('');
+    return categories.map(category => '<section class="bundle-group"><h3>' + esc(category) + '</h3><ul>' + selected.filter(l => (l.category || 'Other') === category).map(l => '<li><span>' + esc(l.title) + '<small>' + esc(l.mode) + ' · ' + esc(l.location || 'Cafe 10') + '</small></span>' + (removable ? '<button class="remove-item" type="button" data-remove="' + esc(l.id) + '" aria-label="Remove ' + esc(l.title) + '">Remove</button>' : '') + '</li>').join('') + '</ul></section>').join('');
   }
   function renderBundlePage() {
     $('#bundleList').innerHTML = bundleGroupsHTML(false);
@@ -80,7 +96,7 @@
     if (a.retakePhoto || a.condition === 'Poor') return false;
     const item = {
       id: 'gemini-' + Date.now(), title: a.itemName, category: a.category || 'Other', product: '', partType: a.partType || '',
-      brand: a.brand || '', model: a.model || '', hostel: 'Campus pickup', mode: 'Community find', condition: a.condition || 'Unclear',
+      brand: a.brand || '', model: a.model || '', location: 'Cafe 10', mode: 'Community find', condition: a.condition || 'Unclear',
       electrical: !!a.isElectrical, note: a.visibleDamage && a.visibleDamage.length ? 'Visible damage: ' + a.visibleDamage.join(', ') : 'Added after accepted Gemini photo analysis.', image: photo
     };
     savedListings.push(item);
@@ -91,7 +107,7 @@
   function showListing(id) {
     const l = LIST.find(x => String(x.id) === String(id)); if (!l) return;
     const inBundle = bundle.has(String(id));
-    $('#resultBody').innerHTML = '<p class="src">Campus find</p><div class="panel listing-detail">' + img(l.image, l.title) + '<h3>' + esc(l.title) + '</h3><p class="meta">' + esc(l.category) + ' · ' + esc(l.mode) + ' · ' + esc(l.hostel) + '</p><dl><dt>Condition</dt><dd>' + esc(l.condition) + '</dd>' + (l.brand ? '<dt>Brand</dt><dd>' + esc(l.brand) + '</dd>' : '') + '<dt>Details</dt><dd>' + esc(l.note || 'Ask about this campus find.') + '</dd></dl>' + (l.electrical ? '<p class="note">Inspect before use.</p>' : '') + '</div><div class="res-actions"><button class="pill primary" type="button" id="listingRequest">' + (inBundle ? 'Remove from bundle' : '＋ Add to bundle') + '</button></div>';
+    $('#resultBody').innerHTML = '<p class="src">Marketplace listing</p><div class="panel listing-detail">' + img(l.image, l.title) + '<h3>' + esc(l.title) + '</h3><p class="meta">' + esc(l.category) + ' · ' + esc(l.mode) + ' · Available at ' + esc(l.location || 'Cafe 10') + '</p><dl><dt>Condition</dt><dd>' + esc(l.condition) + '</dd>' + (l.brand ? '<dt>Brand</dt><dd>' + esc(l.brand) + '</dd>' : '') + '<dt>Details</dt><dd>' + esc(l.note || 'Ask about this campus find.') + '</dd></dl>' + (l.electrical ? '<p class="note">Inspect before use.</p>' : '') + '</div><div class="res-actions"><button class="pill primary" type="button" id="listingRequest">' + (inBundle ? 'Remove from bundle' : '＋ Add to bundle') + '</button></div>';
     $('#listingRequest').addEventListener('click', () => {
       toggleBundle(String(id));
       const nowIn = bundle.has(String(id));
@@ -106,6 +122,8 @@
   function resultHTML(a, source, photo, note) {
     const rejected = a.retakePhoto || a.condition === 'Poor';
     const bundleRecommendation = rejected ? null : (Match.findBundle ? Match.findBundle(a, LIST) : null);
+    const comboIds = Array.isArray(a.bundleListingIds) ? a.bundleListingIds : (a.recommendedListingId ? [a.recommendedListingId] : []);
+    const comboListings = Array.from(new Set(comboIds.map(Number))).slice(0, 2).map(id => LIST.find(l => Number(l.id) === id)).filter(Boolean);
     const label = source === 'gemini'
       ? 'Live Gemini AI'
       : (source === 'fallback'
@@ -113,6 +131,7 @@
           : 'Sample match analysis');
 
     let h = '<p class="src">' + esc(label) + '</p><span class="verdict ' + (rejected ? 'no' : 'ok') + '">' + (rejected ? 'Rejected' : 'Accepted for reuse') + '</span>';
+    if (!rejected && source === 'gemini') h += '<p class="ok-msg">Bring your accepted item to Cafe 10.</p>';
 
     if (rejected) {
       h += '<p class="note">' + (a.retakePhoto ? 'Please retake the photo' + (a.retakeReason ? ': ' + esc(a.retakeReason) : '.') + ' Use good light and show the whole item.' : 'Condition looks too poor to list for reuse. Consider repair or recycling.') + '</p>';
@@ -125,38 +144,40 @@
       '<p class="small">' + esc(a.explanation) + '</p>' + (a.isElectrical ? '<p class="note">Inspect before use.</p>' : a.needsInspection ? '<p class="note">Needs in-person inspection.</p>' : '') + '</div>';
 
     // Amazon-Style Recommended Campus Combo
-    if (bundleRecommendation && bundleRecommendation.listing) {
-      const rec = bundleRecommendation.listing;
-      const recId = String(rec.id);
-      const isAlreadyInBundle = bundle.has(recId);
+    if (comboListings.length || (bundleRecommendation && bundleRecommendation.listing)) {
+      const recs = comboListings.length ? comboListings : [bundleRecommendation.listing];
+      const comboTitle = a.bundleTitle || (bundleRecommendation && bundleRecommendation.title) || 'Recommended Campus Combo';
+      const comboReason = a.bundleReason || (bundleRecommendation && bundleRecommendation.reason) || 'These items make a useful campus pairing.';
+      const recIds = recs.map(rec => String(rec.id));
+      const isAlreadyInBundle = recIds.every(id => bundle.has(id));
       h += '<div class="panel amazon-bundle">' +
         '<div class="bundle-badge">📦 Frequently Paired Campus Combo</div>' +
-        '<h3 class="bundle-name">' + esc(bundleRecommendation.title) + '</h3>' +
+        '<h3 class="bundle-name">' + esc(comboTitle) + '</h3>' +
         '<div class="combo-visual">' +
           '<div class="combo-item">' + (photo ? img(photo, a.itemName) : '<div class="ph"></div>') + '<span>' + esc(a.itemName) + '</span></div>' +
-          '<div class="combo-plus">＋</div>' +
-          '<div class="combo-item">' + img(rec.image, rec.title) + '<span>' + esc(rec.title) + '</span></div>' +
+          recs.map(rec => '<div class="combo-plus">＋</div><div class="combo-item">' + img(rec.image, rec.title) + '<span>' + esc(rec.title) + '</span></div>').join('') +
         '</div>' +
-        '<p class="bundle-reason"><strong>Why this combo?</strong> ' + esc(bundleRecommendation.reason) + '</p>' +
-        '<p class="meta">' + esc(rec.mode) + ' · ' + esc(rec.hostel) + ' · ' + esc(rec.condition) + '</p>' +
+        '<p class="bundle-reason"><strong>Why this combo?</strong> ' + esc(comboReason) + '</p>' +
+        recs.map(rec => '<p class="meta">' + esc(rec.title) + ': ' + esc(rec.mode) + ' · ' + esc(rec.location || 'Cafe 10') + ' · ' + esc(rec.condition) + '</p>').join('') +
         '</div>' +
         '<div class="res-actions">' +
           '<button class="pill primary" type="button" id="addComboBtn">' + (isAlreadyInBundle ? '✓ Combo added to bundle' : '＋ Add this combo to bundle') + '</button>' +
-          '<button class="pill outline" type="button" id="pickupBtn">Request pickup</button>' +
+          '<button class="pill outline" type="button" id="pickupBtn">Bring it to Cafe 10</button>' +
         '</div>';
 
       setTimeout(() => {
         const addBtn = $('#addComboBtn');
         if (addBtn) {
           addBtn.addEventListener('click', () => {
-            toggleBundle(recId);
-            const nowIn = bundle.has(recId);
+            recIds.forEach(id => { if (bundle.has(id)) bundle.delete(id); else bundle.add(id); });
+            renderBrowse();
+            const nowIn = recIds.every(id => bundle.has(id));
             addBtn.textContent = nowIn ? '✓ Combo added to bundle' : '＋ Add this combo to bundle';
             showToastText(nowIn ? 'Added combo to your bundle!' : 'Removed from bundle');
           });
         }
         const pickBtn = $('#pickupBtn');
-        if (pickBtn) pickBtn.addEventListener('click', showToast);
+        if (pickBtn) pickBtn.addEventListener('click', () => showToastText('Please bring it to Cafe 10.'));
       }, 0);
     }
     return h;
@@ -183,7 +204,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             image,
-            listings: LIST.map(l => ({ id: l.id, title: l.title, category: l.category, hostel: l.hostel }))
+            listings: LIST.map(l => ({ id: l.id, title: l.title, category: l.category, location: l.location, product: l.product, partType: l.partType, note: l.note }))
           }),
           signal: ctrl.signal
         });
@@ -191,7 +212,7 @@
         if (!r.ok || !d.analysis) throw new Error(d.error || 'Live sample analysis failed.');
         body(resultHTML(d.analysis, 'gemini', SAMPLE_IMG));
         const added = addVerifiedListing(d.analysis, SAMPLE_IMG);
-        if (added) showToastText('Verified sample item added to Campus finds!');
+        if (added) showToastText('Verified sample item added. Bring it to Cafe 10.');
       } finally {
         clearTimeout(t);
       }
@@ -219,7 +240,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           image,
-          listings: LIST.map(l => ({ id: l.id, title: l.title, category: l.category, hostel: l.hostel }))
+          listings: LIST.map(l => ({ id: l.id, title: l.title, category: l.category, location: l.location, product: l.product, partType: l.partType, note: l.note }))
         }),
         signal: ctrl.signal
       });
@@ -227,7 +248,7 @@
       if (!r.ok || !d.analysis) throw new Error(d.error || 'Analysis failed.');
       body(resultHTML(d.analysis, 'gemini', image));
       const added = addVerifiedListing(d.analysis, image);
-      if (added) showToastText('Verified item added to Campus finds!');
+      if (added) showToastText('Accepted for reuse. Bring it to Cafe 10.');
     } catch (e) {
       const reason = e.name === 'AbortError' ? 'The analysis timed out.' : (e.message || 'Server error.');
       const errBanner = '<div class="panel" style="border-left: 4px solid var(--warn); margin-bottom: 16px;"><p class="warn" style="margin: 0 0 6px;"><strong>Live Gemini analysis is unavailable:</strong> ' + esc(reason) + '</p><p class="small" style="margin: 0;">Showing sample demo analysis below so you can test the rest of the flow. (Fallback data is never presented as a live result).</p></div>';
@@ -252,12 +273,19 @@
   })();
 
   /* Init */
-  fill($('#fCat'), uniq('category')); fill($('#fHostel'), uniq('hostel')); renderBrowse();
-  $('#fCat').addEventListener('change', renderBrowse); $('#fHostel').addEventListener('change', renderBrowse);
+  fill($('#fCat'), uniq('category')); renderBrowse();
+  $('#fCat').addEventListener('change', renderBrowse);
   $('#grid').addEventListener('click', e => {
     const add = e.target.closest('[data-add]');
     if (add) { e.stopPropagation(); toggleBundle(add.dataset.add); return; }
     const card = e.target.closest('[data-item]'); if (card) showListing(card.dataset.item);
+  });
+  $('#comboGrid').addEventListener('click', e => {
+    const button = e.target.closest('[data-combo]');
+    if (!button) return;
+    button.dataset.combo.split(',').forEach(id => bundle.add(String(id)));
+    renderBrowse();
+    showToastText('Combo added to your bundle!');
   });
   $('#bundlePreview').addEventListener('click', e => {
     const remove = e.target.closest('[data-remove]'); if (remove) toggleBundle(String(remove.dataset.remove));
@@ -268,7 +296,6 @@
     $('#expandBundle').textContent = expanded ? 'Hide selected items' : 'Show selected items';
   });
   $('#buildBundle').addEventListener('click', renderBundlePage);
-  $('#sampleBtn').addEventListener('click', runSample);
   $('#browseBtn').addEventListener('click', () => view('browse'));
   if ($('#checkBtn')) $('#checkBtn').addEventListener('click', () => $('#photo').click());
   if ($('#uploadBtn')) $('#uploadBtn').addEventListener('click', () => $('#photo').click());

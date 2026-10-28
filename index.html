@@ -19,24 +19,27 @@
     <h1>SynthesisNCU</h1>
     <p class="sub">Waste to Worth</p>
     <div class="stack">
-      <button id="sampleBtn" class="pill primary" type="button">Try a match</button>
       <button id="uploadBtn" class="pill" type="button">Upload your own photo</button>
-      <button id="browseBtn" class="pill outline" type="button">Browse campus finds</button>
+      <button id="browseBtn" class="pill outline" type="button">AI Marketplace</button>
     </div>
     <input id="photo" type="file" accept="image/*" class="sr" tabindex="-1" aria-label="Upload a photo of your item">
   </section>
 
   <section id="browse" class="view" aria-labelledby="h-browse">
     <button class="back" type="button" data-back="home">‹ Back</button>
-    <h2 id="h-browse">Campus finds</h2>
-    <p class="muted"><span id="kept">0</span> items kept in use (demo estimate from sample listings)</p>
+    <h2 id="h-browse">AI Marketplace</h2>
+    <p class="muted"><span id="kept">0</span> items available in the marketplace</p>
     <p class="muted small" style="margin-top:-8px; font-size:0.8rem;">Listings saved from accepted photo analyses stay in this browser only and are not shared across devices.</p>
     <div class="filters">
       <label>Category <select id="fCat"><option value="">All</option></select></label>
-      <label>Hostel <select id="fHostel"><option value="">All</option></select></label>
     </div>
     <div id="grid" class="grid"></div>
     <p id="empty" class="muted" hidden>No listings match these filters.</p>
+    <section class="recommended" aria-labelledby="h-combos">
+      <h2 id="h-combos">Recommended combos</h2>
+      <p class="muted">Useful campus finds that go well together.</p>
+      <div id="comboGrid" class="combo-grid"></div>
+    </section>
   </section>
 
   <section id="result" class="view" aria-labelledby="h-result" aria-live="polite">
@@ -46,7 +49,7 @@
   </section>
 
   <section id="bundle" class="view" aria-labelledby="h-bundle">
-    <button class="back" type="button" data-back="browse">‹ Back to campus finds</button>
+    <button class="back" type="button" data-back="browse">‹ Back to AI Marketplace</button>
     <h2 id="h-bundle">Your bundle</h2>
     <p class="muted">Take a screenshot of this list, then upload it in the Google Form.</p>
     <div id="bundleList" class="bundle-list"></div>
@@ -56,8 +59,8 @@
 <p class="foot">Demo project. AI results are visual hints only. Always verify fit, condition and electrical safety in person.</p>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <div id="bundleBar" class="bundle-bar" hidden><div class="bundle-toolbar"><span id="bundleCount">0 items selected</span><div><button id="expandBundle" class="pill" type="button" aria-expanded="false">Show selected items</button><button id="buildBundle" class="pill primary" type="button">Build this bundle</button></div></div><div id="bundlePreview" class="bundle-preview" hidden></div></div>
-<script src="data/listings.js?v=2"></script>
-<script src="match.js?v=2"></script>
-<script src="app.js?v=2"></script>
+<script src="data/listings.js?v=3"></script>
+<script src="match.js?v=3"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>

@@ -31,13 +31,13 @@
   }
   const COMBO_MAP = {
     lamp: { targets: ['table', 'chair', 'board'], title: 'Late-Night Study Nook', reason: 'Students frequently pair a focused desk lamp with a study table or chair for quiet late-night study sessions.' },
-    chair: { targets: ['table', 'lamp', 'board'], title: 'Ergonomic Desk Setup', reason: 'An adjustable study chair paired with a compact desk or lamp sets up an ergonomic study corner in any hostel room.' },
+    chair: { targets: ['table', 'lamp', 'board'], title: 'Ergonomic Desk Setup', reason: 'An adjustable study chair paired with a compact desk or lamp sets up a useful study corner.' },
     table: { targets: ['chair', 'lamp', 'kit'], title: 'Complete Room Workstation', reason: 'A compact study table paired with an adjustable chair creates a dedicated study station without taking up floor space.' },
     mixer: { targets: ['jar', 'base'], title: 'Kitchen Prep Duo', reason: 'Pairing this unit with complementary mixer jars completes your kitchen setup for quick shakes and meal prep.' },
-    laptop: { targets: ['board', 'charger'], title: 'Hostel Tech Power Station', reason: 'Students often bundle laptop accessories with an extension board to power multiple devices from one hostel wall socket.' },
-    kettle: { targets: ['base', 'board'], title: 'Quick Tea & Coffee Bar', reason: 'A kettle paired with an extension board sets up an instant hot water and coffee station in your hostel room.' },
+    laptop: { targets: ['board', 'charger'], title: 'Campus Tech Power Station', reason: 'Students often bundle laptop accessories with an extension board to power multiple devices at a study space.' },
+    kettle: { targets: ['base', 'board'], title: 'Quick Tea & Coffee Bar', reason: 'A kettle paired with an extension board sets up an instant hot water and coffee station.' },
     kit: { targets: ['table', 'chair'], title: 'Engineering Drafting Corner', reason: 'Drawing kits and engineering books pair naturally with a flat study table for project submissions and coursework.' },
-    jacket: { targets: ['jacket', 'board'], title: 'Campus Comfort Bundle', reason: 'Essential hostel items frequently claimed together for a comfortable stay on campus.' }
+    jacket: { targets: ['jacket', 'board'], title: 'Campus Comfort Bundle', reason: 'Useful campus essentials that students often claim together.' }
   };
 
   function findBundle(item, listings) {
