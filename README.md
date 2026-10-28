@@ -90,7 +90,7 @@ The server limits recommendations to valid marketplace listing IDs and no more t
 - Accepted items and their uploaded image are saved in the current browser’s local storage. They are not synced to a server or shared with other users.
 - Uploaded images are sent to Gemini for analysis. This app does not save them to its own server database.
 - The Google Form step is user-driven: the app prepares the selected bundle, and the user uploads its screenshot through the form.
-- Listing images are local files under `images/`. The scarf and drawing sheets bundle use `images/scarf.jpg` and `images/bundle.jpg`. Add those files to show their photos; missing images display as empty placeholders.
+- Listing images are local files under `images/`, including `images/laptop-sleeve.jpg`, `images/graph-notebooks.jpg`, `images/scarf.jpg`, and `images/bundle.jpg`. Missing images display as empty placeholders.
 - The “items available” number reflects the current visible listings. It is not a measured waste reduction or impact total.
 
 ## What comes next
