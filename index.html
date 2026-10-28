@@ -19,20 +19,18 @@
     <h1>SynthesisNCU</h1>
     <p class="sub">Waste to Worth</p>
     <div class="stack">
-      <button id="sampleBtn" class="pill primary" type="button">Try a sample</button>
-      <div class="duo">
-        <button id="checkBtn" class="pill" type="button" aria-expanded="false" aria-controls="uploadBtn">Check an item</button>
-        <button id="uploadBtn" class="pill outline" type="button" hidden>Upload a photo</button>
-      </div>
-      <button id="browseBtn" class="pill" type="button">Browse campus finds</button>
+      <button id="sampleBtn" class="pill primary" type="button">Try a match</button>
+      <button id="uploadBtn" class="pill" type="button">Upload your own photo</button>
+      <button id="browseBtn" class="pill outline" type="button">Browse campus finds</button>
     </div>
     <input id="photo" type="file" accept="image/*" class="sr" tabindex="-1" aria-label="Upload a photo of your item">
   </section>
 
   <section id="browse" class="view" aria-labelledby="h-browse">
-    <button class="back" type="button" data-back>‹ Back</button>
+    <button class="back" type="button" data-back="home">‹ Back</button>
     <h2 id="h-browse">Campus finds</h2>
     <p class="muted"><span id="kept">0</span> items kept in use (demo estimate from sample listings)</p>
+    <p class="muted small" style="margin-top:-8px; font-size:0.8rem;">Listings saved from accepted photo analyses stay in this browser only and are not shared across devices.</p>
     <div class="filters">
       <label>Category <select id="fCat"><option value="">All</option></select></label>
       <label>Hostel <select id="fHostel"><option value="">All</option></select></label>
@@ -42,15 +40,24 @@
   </section>
 
   <section id="result" class="view" aria-labelledby="h-result" aria-live="polite">
-    <button class="back" type="button" data-back>‹ Back</button>
+    <button class="back" type="button" data-back="previous">‹ Back</button>
     <h2 id="h-result" class="sr">Analysis result</h2>
     <div id="resultBody"></div>
+  </section>
+
+  <section id="bundle" class="view" aria-labelledby="h-bundle">
+    <button class="back" type="button" data-back="browse">‹ Back to campus finds</button>
+    <h2 id="h-bundle">Your bundle</h2>
+    <p class="muted">Take a screenshot of this list, then upload it in the Google Form.</p>
+    <div id="bundleList" class="bundle-list"></div>
+    <a class="pill primary form-link" href="https://docs.google.com/forms/d/e/1FAIpQLSfBWB39B9HYLRSJrbbwKB968UWCKkxdPDWTdJvIZB4tdKQ0Lw/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer">Open Google Form to upload screenshot</a>
   </section>
 </main>
 <p class="foot">Demo project. AI results are visual hints only. Always verify fit, condition and electrical safety in person.</p>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="data/listings.js"></script>
-<script src="match.js"></script>
-<script src="app.js"></script>
+<div id="bundleBar" class="bundle-bar" hidden><div class="bundle-toolbar"><span id="bundleCount">0 items selected</span><div><button id="expandBundle" class="pill" type="button" aria-expanded="false">Show selected items</button><button id="buildBundle" class="pill primary" type="button">Build this bundle</button></div></div><div id="bundlePreview" class="bundle-preview" hidden></div></div>
+<script src="data/listings.js?v=2"></script>
+<script src="match.js?v=2"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>

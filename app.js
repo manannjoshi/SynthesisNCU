@@ -6,32 +6,67 @@
   const LIST = [...(Array.isArray(window.SAMPLE_LISTINGS) ? window.SAMPLE_LISTINGS : []), ...savedListings];
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const SAMPLE_IMG = 'images/sample-item.jpg';
+  const bundle = new Set();
+  let resultBackTarget = 'home';
   // Clearly labelled demo data. Never shown as a live Gemini result.
   const SAMPLE = {
-    itemName: 'Mixer grinder base unit', category: 'Kitchen', partType: 'base', brand: 'Prestige', model: 'Iris',
-    visibleDamage: ['Scuffed top cover', 'Jar missing'], condition: 'Fair', isElectrical: true, needsInspection: true,
-    retakePhoto: false, retakeReason: '', confidence: 'medium',
-    explanation: 'Sample data: a motor base with no jar. Brand and model are marked on the label in this sample.'
+    itemName: 'Desk lamp (flexible neck)', category: 'Electronics', partType: 'lamp', brand: 'Wipro', model: '',
+    visibleDamage: ['Minor base scratches'], condition: 'Good', isElectrical: true, needsInspection: true,
+    retakePhoto: false, retakeReason: '', confidence: 'high',
+    explanation: 'A clean desk study lamp with adjustable neck. Ideal for focused room lighting.',
+    recommendedListingId: 10,
+    bundleTitle: 'Late-Night Study Nook Combo',
+    bundleReason: 'Pairing this focused desk lamp with a compact study table creates an ideal, distraction-free study corner in your hostel room.'
   };
 
   function view(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === id));
     window.scrollTo(0, 0);
   }
-  const img = (src, alt) => '<div class="ph">' + (src ? '<img src="' + esc(src) + '" alt="' + esc(alt) + '" loading="lazy" onerror="this.remove()">' : '') + '</div>';
+  const img = (src, alt) => '<div class="ph">' + (src ? '<img src="' + esc(src) + '" alt="' + esc(alt) + '" loading="lazy" onerror="this.onerror=null;this.style.opacity=\'0\';">' : '') + '</div>';
 
   /* Browse */
   const uniq = k => Array.from(new Set(LIST.map(l => l[k]))).sort();
   function fill(sel, vals) { vals.forEach(v => { const o = document.createElement('option'); o.value = o.textContent = v; sel.appendChild(o); }); }
   function cardHTML(l) {
-    return '<button class="card" type="button" data-item="' + esc(l.id) + '" aria-label="View ' + esc(l.title) + '">' + img(l.image, l.title) + '<span class="cb"><strong>' + esc(l.title) + '</strong><span class="meta">' + esc(l.mode) + ' · ' + esc(l.hostel) + '</span><span class="meta">' + esc(l.condition) + '</span>' +
-      (l.electrical ? '<span class="warn">Inspect before use</span>' : '') + '<span class="card-hint">View item →</span></span></button>';
+    const id = String(l.id), added = bundle.has(id);
+    return '<article class="card"><button class="card-open" type="button" data-item="' + esc(id) + '" aria-label="View ' + esc(l.title) + '">' + img(l.image, l.title) + '<span class="cb"><strong>' + esc(l.title) + '</strong><span class="meta">' + esc(l.mode) + ' · ' + esc(l.hostel) + '</span><span class="meta">' + esc(l.condition) + '</span>' +
+      (l.electrical ? '<span class="warn">Inspect before use</span>' : '') + '<span class="card-hint">View item →</span></span></button><button class="add-item' + (added ? ' selected' : '') + '" type="button" data-add="' + esc(id) + '" aria-label="' + (added ? 'Remove ' : 'Add ') + esc(l.title) + (added ? ' from' : ' to') + ' bundle">' + (added ? '✓' : '+') + '</button></article>';
   }
   function renderBrowse() {
     const c = $('#fCat').value, h = $('#fHostel').value;
     const shown = LIST.filter(l => (!c || l.category === c) && (!h || l.hostel === h));
     $('#grid').innerHTML = shown.map(cardHTML).join('');
     $('#empty').hidden = shown.length > 0; $('#kept').textContent = shown.length;
+    updateBundleBar();
+  }
+  function updateBundleBar() {
+    const bar = $('#bundleBar'); if (!bar) return;
+    bar.hidden = bundle.size === 0;
+    $('#bundleCount').textContent = bundle.size + (bundle.size === 1 ? ' item selected' : ' items selected');
+    $('#expandBundle').textContent = ($('#expandBundle').getAttribute('aria-expanded') === 'true' ? 'Hide' : 'Show') + ' selected items';
+    $('#bundlePreview').innerHTML = bundleGroupsHTML(true);
+  }
+  function toggleBundle(id) {
+    if (bundle.has(id)) bundle.delete(id); else bundle.add(id);
+    const button = document.querySelector('[data-add="' + CSS.escape(id) + '"]');
+    if (button) {
+      const added = bundle.has(id);
+      const l = LIST.find(x => String(x.id) === id);
+      const title = l ? l.title : 'item';
+      button.classList.toggle('selected', added); button.textContent = added ? '✓' : '+';
+      button.setAttribute('aria-label', (added ? 'Remove ' : 'Add ') + title + (added ? ' from' : ' to') + ' bundle');
+    }
+    updateBundleBar();
+  }
+  function bundleGroupsHTML(removable) {
+    const selected = Array.from(bundle).map(id => LIST.find(l => String(l.id) === id)).filter(Boolean);
+    const categories = Array.from(new Set(selected.map(l => l.category || 'Other'))).sort();
+    return categories.map(category => '<section class="bundle-group"><h3>' + esc(category) + '</h3><ul>' + selected.filter(l => (l.category || 'Other') === category).map(l => '<li><span>' + esc(l.title) + '<small>' + esc(l.mode) + ' · ' + esc(l.hostel) + '</small></span>' + (removable ? '<button class="remove-item" type="button" data-remove="' + esc(l.id) + '" aria-label="Remove ' + esc(l.title) + '">Remove</button>' : '') + '</li>').join('') + '</ul></section>').join('');
+  }
+  function renderBundlePage() {
+    $('#bundleList').innerHTML = bundleGroupsHTML(false);
+    view('bundle');
   }
   function showToast() {
     showToastText('Request placed!');
@@ -49,38 +84,122 @@
       electrical: !!a.isElectrical, note: a.visibleDamage && a.visibleDamage.length ? 'Visible damage: ' + a.visibleDamage.join(', ') : 'Added after accepted Gemini photo analysis.', image: photo
     };
     savedListings.push(item);
+    LIST.push(item);
     try { localStorage.setItem(SAVED_KEY, JSON.stringify(savedListings)); } catch (_) { /* keep it in this session */ }
     renderBrowse(); return true;
   }
   function showListing(id) {
     const l = LIST.find(x => String(x.id) === String(id)); if (!l) return;
-    $('#resultBody').innerHTML = '<p class="src">Campus find</p><div class="panel listing-detail">' + img(l.image, l.title) + '<h3>' + esc(l.title) + '</h3><p class="meta">' + esc(l.category) + ' · ' + esc(l.mode) + ' · ' + esc(l.hostel) + '</p><dl><dt>Condition</dt><dd>' + esc(l.condition) + '</dd>' + (l.brand ? '<dt>Brand</dt><dd>' + esc(l.brand) + '</dd>' : '') + '<dt>Details</dt><dd>' + esc(l.note || 'Ask about this campus find.') + '</dd></dl>' + (l.electrical ? '<p class="note">Inspect before use.</p>' : '') + '</div><div class="res-actions"><button class="pill primary" type="button" id="listingRequest">Place request</button></div>';
-    $('#listingRequest').addEventListener('click', showToast); view('result');
+    const inBundle = bundle.has(String(id));
+    $('#resultBody').innerHTML = '<p class="src">Campus find</p><div class="panel listing-detail">' + img(l.image, l.title) + '<h3>' + esc(l.title) + '</h3><p class="meta">' + esc(l.category) + ' · ' + esc(l.mode) + ' · ' + esc(l.hostel) + '</p><dl><dt>Condition</dt><dd>' + esc(l.condition) + '</dd>' + (l.brand ? '<dt>Brand</dt><dd>' + esc(l.brand) + '</dd>' : '') + '<dt>Details</dt><dd>' + esc(l.note || 'Ask about this campus find.') + '</dd></dl>' + (l.electrical ? '<p class="note">Inspect before use.</p>' : '') + '</div><div class="res-actions"><button class="pill primary" type="button" id="listingRequest">' + (inBundle ? 'Remove from bundle' : '＋ Add to bundle') + '</button></div>';
+    $('#listingRequest').addEventListener('click', () => {
+      toggleBundle(String(id));
+      const nowIn = bundle.has(String(id));
+      $('#listingRequest').textContent = nowIn ? 'Remove from bundle' : '＋ Add to bundle';
+      showToastText(nowIn ? 'Added to bundle!' : 'Removed from bundle');
+    });
+    resultBackTarget = 'browse';
+    view('result');
   }
 
   /* Result */
   function resultHTML(a, source, photo, note) {
     const rejected = a.retakePhoto || a.condition === 'Poor';
-    const m = rejected ? { kind: 'none' } : Match.findMatch(a, LIST);
-    const label = source === 'gemini' ? 'Live Gemini analysis' : 'Sample analysis (demo data, not a live Gemini result)';
-    let h = '<p class="src">' + esc(label) + '</p><span class="verdict ' + (rejected ? 'no' : 'ok') + '">' + (rejected ? 'Rejected' : 'Accepted') + '</span>' +
-      '<div class="score">' + (m.kind === 'none' ? '-' : m.score + '<span>%</span>') + '</div><p class="cap">Match score</p>';
-    if (rejected) h += '<p class="note">' + (a.retakePhoto ? 'Please retake the photo' + (a.retakeReason ? ': ' + esc(a.retakeReason) : '.') + ' Use good light and show the whole item.' : 'Condition looks too poor to list for reuse. Consider repair or recycling.') + '</p>';
+    const bundleRecommendation = rejected ? null : (Match.findBundle ? Match.findBundle(a, LIST) : null);
+    const label = source === 'gemini'
+      ? 'Live Gemini AI'
+      : (source === 'fallback'
+          ? 'Demo fallback (Gemini unavailable — sample data shown)'
+          : 'Sample match analysis');
+
+    let h = '<p class="src">' + esc(label) + '</p><span class="verdict ' + (rejected ? 'no' : 'ok') + '">' + (rejected ? 'Rejected' : 'Accepted for reuse') + '</span>';
+
+    if (rejected) {
+      h += '<p class="note">' + (a.retakePhoto ? 'Please retake the photo' + (a.retakeReason ? ': ' + esc(a.retakeReason) : '.') + ' Use good light and show the whole item.' : 'Condition looks too poor to list for reuse. Consider repair or recycling.') + '</p>';
+    }
+
+    // Your Item details
     h += '<div class="panel">' + (photo ? img(photo, 'Your item') : '') + '<h3>' + esc(a.itemName) + '</h3><dl><dt>Category</dt><dd>' + esc(a.category) + '</dd>' +
       (a.partType ? '<dt>Part</dt><dd>' + esc(a.partType) + '</dd>' : '') + (a.brand ? '<dt>Brand</dt><dd>' + esc(a.brand) + '</dd>' : '') + (a.model ? '<dt>Model</dt><dd>' + esc(a.model) + '</dd>' : '') +
-      '<dt>Damage</dt><dd>' + (a.visibleDamage.length ? esc(a.visibleDamage.join(', ')) : 'None visible') + '</dd><dt>Condition</dt><dd>' + esc(a.condition) + '</dd><dt>Confidence</dt><dd>' + esc(a.confidence) + '</dd></dl>' +
+      '<dt>Damage</dt><dd>' + (a.visibleDamage && a.visibleDamage.length ? esc(a.visibleDamage.join(', ')) : 'None visible') + '</dd><dt>Condition</dt><dd>' + esc(a.condition) + '</dd><dt>Confidence</dt><dd>' + esc(a.confidence) + '</dd></dl>' +
       '<p class="small">' + esc(a.explanation) + '</p>' + (a.isElectrical ? '<p class="note">Inspect before use.</p>' : a.needsInspection ? '<p class="note">Needs in-person inspection.</p>' : '') + '</div>';
-    if (m.kind !== 'none') {
-      const l = m.listing;
-      h += '<div class="panel"><p class="meta">' + (m.kind === 'part' ? 'Possible complementary part' : 'No part match. Reuse idea') + '</p>' + img(l.image, l.title) + '<h3>' + esc(l.title) + '</h3><p class="meta">' + esc(l.mode) + ' · ' + esc(l.hostel) + '</p>' +
-        '<p class="small">' + esc(m.why.join(' ') || 'Closest listing by category.') + ' Rule-based score, capped at 95%. Verify fit in person.</p></div>' +
-        '<div class="res-actions"><button class="pill primary" type="button" id="pickupBtn">Request pickup</button></div>';
-      setTimeout(() => $('#pickupBtn').addEventListener('click', showToast), 0);
+
+    // Amazon-Style Recommended Campus Combo
+    if (bundleRecommendation && bundleRecommendation.listing) {
+      const rec = bundleRecommendation.listing;
+      const recId = String(rec.id);
+      const isAlreadyInBundle = bundle.has(recId);
+      h += '<div class="panel amazon-bundle">' +
+        '<div class="bundle-badge">📦 Frequently Paired Campus Combo</div>' +
+        '<h3 class="bundle-name">' + esc(bundleRecommendation.title) + '</h3>' +
+        '<div class="combo-visual">' +
+          '<div class="combo-item">' + (photo ? img(photo, a.itemName) : '<div class="ph"></div>') + '<span>' + esc(a.itemName) + '</span></div>' +
+          '<div class="combo-plus">＋</div>' +
+          '<div class="combo-item">' + img(rec.image, rec.title) + '<span>' + esc(rec.title) + '</span></div>' +
+        '</div>' +
+        '<p class="bundle-reason"><strong>Why this combo?</strong> ' + esc(bundleRecommendation.reason) + '</p>' +
+        '<p class="meta">' + esc(rec.mode) + ' · ' + esc(rec.hostel) + ' · ' + esc(rec.condition) + '</p>' +
+        '</div>' +
+        '<div class="res-actions">' +
+          '<button class="pill primary" type="button" id="addComboBtn">' + (isAlreadyInBundle ? '✓ Combo added to bundle' : '＋ Add this combo to bundle') + '</button>' +
+          '<button class="pill outline" type="button" id="pickupBtn">Request pickup</button>' +
+        '</div>';
+
+      setTimeout(() => {
+        const addBtn = $('#addComboBtn');
+        if (addBtn) {
+          addBtn.addEventListener('click', () => {
+            toggleBundle(recId);
+            const nowIn = bundle.has(recId);
+            addBtn.textContent = nowIn ? '✓ Combo added to bundle' : '＋ Add this combo to bundle';
+            showToastText(nowIn ? 'Added combo to your bundle!' : 'Removed from bundle');
+          });
+        }
+        const pickBtn = $('#pickupBtn');
+        if (pickBtn) pickBtn.addEventListener('click', showToast);
+      }, 0);
     }
     return h;
   }
+
   const body = html => { $('#resultBody').innerHTML = html; view('result'); };
-  function runSample() { body(resultHTML(SAMPLE, 'sample', SAMPLE_IMG)); }
+  async function runSample() {
+    resultBackTarget = 'home';
+    body('<p class="sub" role="status">Analyzing sample item with Gemini AI...</p>');
+    try {
+      const resp = await fetch(SAMPLE_IMG);
+      if (!resp.ok) throw new Error('Could not load sample image');
+      const blob = await resp.blob();
+      const image = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = () => res(reader.result);
+        reader.onerror = rej;
+        reader.readAsDataURL(blob);
+      });
+      const ctrl = new AbortController(), t = setTimeout(() => ctrl.abort(), 12000);
+      try {
+        const r = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image,
+            listings: LIST.map(l => ({ id: l.id, title: l.title, category: l.category, hostel: l.hostel }))
+          }),
+          signal: ctrl.signal
+        });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok || !d.analysis) throw new Error(d.error || 'Live sample analysis failed.');
+        body(resultHTML(d.analysis, 'gemini', SAMPLE_IMG));
+        const added = addVerifiedListing(d.analysis, SAMPLE_IMG);
+        if (added) showToastText('Verified sample item added to Campus finds!');
+      } finally {
+        clearTimeout(t);
+      }
+    } catch (e) {
+      console.warn('Live Gemini sample check unavailable, showing sample fallback data:', e);
+      body(resultHTML(SAMPLE, 'sample', SAMPLE_IMG));
+    }
+  }
   function downscale(file) {
     return new Promise((res, rej) => {
       const url = URL.createObjectURL(file), im = new Image();
@@ -90,19 +209,29 @@
     });
   }
   async function runUpload(file) {
-    body('<p class="sub" role="status">Analyzing your photo...</p>');
+    resultBackTarget = 'home';
+    body('<p class="sub" role="status">Analyzing your photo with Gemini AI...</p>');
     const ctrl = new AbortController(), t = setTimeout(() => ctrl.abort(), 14000);
     try {
       const image = await downscale(file);
-      const r = await fetch('/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image }), signal: ctrl.signal });
+      const r = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image,
+          listings: LIST.map(l => ({ id: l.id, title: l.title, category: l.category, hostel: l.hostel }))
+        }),
+        signal: ctrl.signal
+      });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.analysis) throw new Error(d.error || 'Analysis failed.');
       body(resultHTML(d.analysis, 'gemini', image));
       const added = addVerifiedListing(d.analysis, image);
       if (added) showToastText('Verified item added to Campus finds!');
     } catch (e) {
-      body('<p class="note">Live analysis is unavailable: ' + esc(e.name === 'AbortError' ? 'the analysis timed out.' : e.message) + ' Your photo was not analyzed.</p><div class="res-actions"><button class="pill primary" type="button" id="fb">Try a sample</button></div>');
-      $('#fb').addEventListener('click', runSample);
+      const reason = e.name === 'AbortError' ? 'The analysis timed out.' : (e.message || 'Server error.');
+      const errBanner = '<div class="panel" style="border-left: 4px solid var(--warn); margin-bottom: 16px;"><p class="warn" style="margin: 0 0 6px;"><strong>Live Gemini analysis is unavailable:</strong> ' + esc(reason) + '</p><p class="small" style="margin: 0;">Showing sample demo analysis below so you can test the rest of the flow. (Fallback data is never presented as a live result).</p></div>';
+      body(errBanner + resultHTML(SAMPLE, 'fallback', SAMPLE_IMG));
     } finally { clearTimeout(t); $('#photo').value = ''; }
   }
 
@@ -125,11 +254,27 @@
   /* Init */
   fill($('#fCat'), uniq('category')); fill($('#fHostel'), uniq('hostel')); renderBrowse();
   $('#fCat').addEventListener('change', renderBrowse); $('#fHostel').addEventListener('change', renderBrowse);
-  $('#grid').addEventListener('click', e => { const card = e.target.closest('[data-item]'); if (card) showListing(card.dataset.item); });
+  $('#grid').addEventListener('click', e => {
+    const add = e.target.closest('[data-add]');
+    if (add) { e.stopPropagation(); toggleBundle(add.dataset.add); return; }
+    const card = e.target.closest('[data-item]'); if (card) showListing(card.dataset.item);
+  });
+  $('#bundlePreview').addEventListener('click', e => {
+    const remove = e.target.closest('[data-remove]'); if (remove) toggleBundle(String(remove.dataset.remove));
+  });
+  $('#expandBundle').addEventListener('click', () => {
+    const expanded = $('#expandBundle').getAttribute('aria-expanded') !== 'true';
+    $('#expandBundle').setAttribute('aria-expanded', String(expanded)); $('#bundlePreview').hidden = !expanded;
+    $('#expandBundle').textContent = expanded ? 'Hide selected items' : 'Show selected items';
+  });
+  $('#buildBundle').addEventListener('click', renderBundlePage);
   $('#sampleBtn').addEventListener('click', runSample);
   $('#browseBtn').addEventListener('click', () => view('browse'));
-  $('#checkBtn').addEventListener('click', () => { const u = $('#uploadBtn'); u.hidden = !u.hidden; $('#checkBtn').setAttribute('aria-expanded', String(!u.hidden)); if (!u.hidden) u.focus(); });
-  $('#uploadBtn').addEventListener('click', () => $('#photo').click());
+  if ($('#checkBtn')) $('#checkBtn').addEventListener('click', () => $('#photo').click());
+  if ($('#uploadBtn')) $('#uploadBtn').addEventListener('click', () => $('#photo').click());
   $('#photo').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) runUpload(f); });
-  document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => view('home')));
+  document.querySelectorAll('[data-back="home"]').forEach(b => b.addEventListener('click', () => view('home')));
+  document.querySelectorAll('[data-back="browse"]').forEach(b => b.addEventListener('click', () => view('browse')));
+  document.querySelectorAll('[data-back="previous"]').forEach(b => b.addEventListener('click', () => view(resultBackTarget)));
+  document.querySelectorAll('[data-back]:not([data-back="home"]):not([data-back="browse"]):not([data-back="previous"])').forEach(b => b.addEventListener('click', () => view('home')));
 })();

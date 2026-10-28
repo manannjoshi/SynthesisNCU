@@ -40,14 +40,13 @@ node test.js              # matching tests
 Without a key the site still works: use the sample item.
 
 ## Configure GEMINI_API_KEY
-Get a key from Google AI Studio. Locally: put it in `.env` (git-ignored). On Vercel: Project Settings > Environment Variables > add `GEMINI_API_KEY`, then redeploy. The key is read only on the server and is never in browser code. Optional: `GEMINI_MODEL` (default `gemini-2.5-flash`).
+Get a key from Google AI Studio. Locally: put it in `.env` (git-ignored). On Vercel: Project Settings > Environment Variables > add `GEMINI_API_KEY`, then redeploy. The key is read only on the server and is never in browser code. Optional: `GEMINI_MODEL` (default `gemini-3.5-flash-lite`).
 
 ## Deploy to Vercel
 Import the GitHub repo in Vercel (framework preset "Other", no build command), add `GEMINI_API_KEY`, deploy.
 
-## Limitations
-- Sample listings are static demo data. Users cannot add listings yet, and the app stores nothing (no localStorage, no database). If listing creation is added, it should stay in the browser's localStorage and be labeled as not shared with other users.
-- Pickup requests are on-screen only.
+- Initial sample listings are static demo data in `data/listings.js`. Verified items accepted after Gemini photo analysis are saved locally in the browser's `localStorage` and are not shared across devices or synced to a database.
+- Pickup requests are on-screen only (no backend notification).
 - AI output is a visual hint. Verify fit, condition and electrical safety in person.
 - Uploaded photos are sent to Gemini for analysis and are not stored by this app.
 
