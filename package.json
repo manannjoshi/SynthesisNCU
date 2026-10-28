@@ -1,0 +1,4 @@
+{ "name": "synthesisncu", "version": "1.0.0", "private": true,
+  "description": "Waste to Worth: campus reuse, donation, exchange and repair",
+  "scripts": { "dev": "node dev-server.js", "test": "node test.js" },
+  "engines": { "node": ">=18" } }

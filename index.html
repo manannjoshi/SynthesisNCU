@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SynthesisNCU</title>
+<meta name="description" content="Waste to Worth: give campus items a second life.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+  <section id="home" class="view active" aria-label="Home">
+    <h1>SynthesisNCU</h1>
+    <p class="sub">Waste to Worth</p>
+    <div class="stack">
+      <button id="sampleBtn" class="pill primary" type="button">Try a sample</button>
+      <div class="duo">
+        <button id="checkBtn" class="pill" type="button" aria-expanded="false" aria-controls="uploadBtn">Check an item</button>
+        <button id="uploadBtn" class="pill outline" type="button" hidden>Upload a photo</button>
+      </div>
+      <button id="browseBtn" class="pill" type="button">Browse campus finds</button>
+    </div>
+    <input id="photo" type="file" accept="image/*" class="sr" tabindex="-1" aria-label="Upload a photo of your item">
+  </section>
+
+  <section id="browse" class="view" aria-labelledby="h-browse">
+    <button class="back" type="button" data-back>‹ Back</button>
+    <h2 id="h-browse">Campus finds</h2>
+    <p class="muted"><span id="kept">0</span> items kept in use (demo estimate from sample listings)</p>
+    <div class="filters">
+      <label>Category <select id="fCat"><option value="">All</option></select></label>
+      <label>Hostel <select id="fHostel"><option value="">All</option></select></label>
+    </div>
+    <div id="grid" class="grid"></div>
+    <p id="empty" class="muted" hidden>No listings match these filters.</p>
+  </section>
+
+  <section id="result" class="view" aria-labelledby="h-result" aria-live="polite">
+    <button class="back" type="button" data-back>‹ Back</button>
+    <h2 id="h-result" class="sr">Analysis result</h2>
+    <div id="resultBody"></div>
+  </section>
+</main>
+<p class="foot">Demo project. AI results are visual hints only. Always verify fit, condition and electrical safety in person.</p>
+<script src="data/listings.js"></script>
+<script src="match.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

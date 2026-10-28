@@ -1,0 +1,1 @@
+{ "functions": { "api/analyze.js": { "includeFiles": "prompts/**", "maxDuration": 15 } } }

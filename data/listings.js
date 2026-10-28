@@ -1,0 +1,12 @@
+// Sample campus listings (demo data). Edit freely; no database is used.
+(typeof window !== 'undefined' ? window : globalThis).SAMPLE_LISTINGS = [
+  { id: 1, title: 'Mixer grinder jar, 1.5 L', category: 'Kitchen', product: 'mixer', partType: 'jar', brand: 'Prestige', model: 'Iris', hostel: 'Aravali Hostel', mode: 'Donate', condition: 'Good, small scratches', electrical: false, note: 'Steel jar with lid. Used one semester.' },
+  { id: 2, title: 'Mixer grinder jar set (3)', category: 'Kitchen', product: 'mixer', partType: 'jar', brand: 'Bajaj', model: 'GX 3', hostel: 'Vindhya Hostel', mode: 'Exchange', condition: 'Fair', electrical: false, note: 'Wants a kettle or lamp in exchange.' },
+  { id: 3, title: 'Laptop charger 65 W', category: 'Electronics', product: 'laptop', partType: 'charger', brand: 'Dell', model: 'Inspiron 15', hostel: 'Shivalik Hostel', mode: 'Exchange', condition: 'Cable frayed near plug', electrical: true, note: 'Needs inspection before use.' },
+  { id: 4, title: 'Desk lamp (no bulb)', category: 'Electronics', product: 'lamp', partType: 'lamp', brand: 'Wipro', model: '', hostel: "Himalaya Girls' Hostel", mode: 'Donate', condition: 'Good', electrical: true, note: 'Takes a standard bulb, check fit.' },
+  { id: 5, title: 'Study chair, adjustable', category: 'Furniture', product: 'chair', partType: 'chair', brand: '', model: '', hostel: 'Aravali Hostel', mode: 'Donate', condition: 'Good, one loose armrest', electrical: false, note: 'Pickup from ground floor lounge.' },
+  { id: 6, title: 'Engineering drawing kit + 2 books', category: 'Stationery & Books', product: 'kit', partType: 'kit', brand: 'Camlin', model: '', hostel: 'Shivalik Hostel', mode: 'Reuse', condition: 'Good', electrical: false, note: 'Ideal for first-year students.' },
+  { id: 7, title: 'Electric kettle base only', category: 'Kitchen', product: 'kettle', partType: 'base', brand: 'Pigeon', model: 'Favourite', hostel: 'Vindhya Hostel', mode: 'Repair', condition: 'Kettle jug broken', electrical: true, note: 'Looking for a matching jug.' },
+  { id: 8, title: 'Winter jacket, size M', category: 'Clothing', product: 'jacket', partType: 'jacket', brand: '', model: '', hostel: "Himalaya Girls' Hostel", mode: 'Donate', condition: 'Good', electrical: false, note: 'Washed and ready.' },
+  { id: 9, title: 'Extension board, 4 socket', category: 'Electronics', product: 'board', partType: 'board', brand: 'Anchor', model: '', hostel: 'Vindhya Hostel', mode: 'Reuse', condition: 'Fair, discoloured', electrical: true, note: 'Check wiring before use.' }
+];
